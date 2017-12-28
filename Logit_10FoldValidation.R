@@ -1,8 +1,8 @@
 #Randomly shuffle the data
-train<-train[sample(nrow(train)),]
+train <- train[sample(nrow(train)),]
 
 #Create 10 equally size folds
-folds <- cut(seq(1,nrow(train)),breaks=10,labels=FALSE)
+folds <- cut(seq(1,nrow(train)), breaks = 10, labels = FALSE)
 
 acc <- data.table(Model = character(),
                   Accuracy = integer())
@@ -15,7 +15,7 @@ for(i in 1:10){
   trainData <- train[-testIndexes, ]
   assign(x = paste0("model_", i),
          step(direction = "backward",
-              object = glm(formula = Survived ~ glmAge + Fare + SibSp + Parch + Embarked + Pclass + Sex,
+              object = glm(formula = Survived ~ glmAge + log_Fare + SibSp + Parch + Embarked + Pclass + Title + Cl_Relative + nTicket,
                            data = trainData, 
                            family = binomial(link = "logit"))))
   testData[, phat := predict.glm(get(paste0("model_", i)), newdata = testData, type = "response")]
@@ -27,11 +27,11 @@ for(i in 1:10){
 }
 acc[, Accuracy := as.numeric(Accuracy)]
 selectedcols <- colnames(as.data.table(get(acc[Accuracy == max(Accuracy)]$Model)$model))[2:ncol(get(acc[Accuracy == max(Accuracy)]$Model)$model)]
-model <- glm(formula = Survived ~ glmAge + log_Fare + SibSp + Parch + Pclass + Sex,
+model <- glm(formula = Survived ~ glmAge + log_Fare + Pclass + Title + Cl_Relative,
              data = train, family = binomial(link = "logit"))
 test[, phat := predict.glm(model, newdata = test, type = "response")]
 test[, Survived := ifelse(phat > 0.5, 1, 0)]
 gender_submission <- merge(gender_submission[, 1],
                            test[, c("PassengerId", "Survived")],
                            by = "PassengerId")
-fwrite(gender_submission, "submission_20171228_2.csv")
+fwrite(gender_submission, "submission_20171228_4.csv")
