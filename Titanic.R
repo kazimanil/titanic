@@ -7,26 +7,34 @@ test <- fread("test.csv")
 # Data Manipulation ----
 train[Sex == "female", Num_Sex := 1]
 train[Sex != "female", Num_Sex := 0]
-train[, log_Fare := log10(Fare)]
+train[, log_Fare := log10(Fare + 1)]
 train[log_Fare < 1, Cl_Fare := "Cheapest"]
 train[log_Fare >= 1 & log_Fare < 1.5, Cl_Fare := "Cheap"]
 train[log_Fare >= 1.5 & log_Fare < 2, Cl_Fare := "Modest"]
 train[log_Fare > 2, Cl_Fare := "Expensive"]
 train[, Age := ceiling(Age)]
+train[, glmAge := ifelse(is.na(Age), 29, Age)] # 29 is the median and the mean.
 train[, Cl_Age := as.factor(pmin(ceiling(Age / 10), 8))]
 train[, Cl_Relative := as.factor(pmin(SibSp + Parch, 5))]
+train[, Pclass := as.factor(Pclass)]
+train[, Embarked := as.factor(Embarked)]
+train[, Sex := as.factor(Sex)]
 
 test[Sex == "female", Num_Sex := 1]
 test[Sex != "female", Num_Sex := 0]
-test[, log_Fare := log10(Fare)]
+test[is.na(Fare), Fare := 0]
+test[, log_Fare := log10(Fare + 1)]
 test[log_Fare < 1, Cl_Fare := "Cheapest"]
 test[log_Fare >= 1 & log_Fare < 1.5, Cl_Fare := "Cheap"]
 test[log_Fare >= 1.5 & log_Fare < 2, Cl_Fare := "Modest"]
 test[log_Fare > 2, Cl_Fare := "Expensive"]
-test[is.na(log_Fare), Cl_Fare := "Cheapest"] # lets consider no-info guy bought the cheapest ticket
 test[, Age := ceiling(Age)]
+test[, glmAge := ifelse(is.na(Age), 29, Age)] # 29 is the median and the mean.
 test[, Cl_Age := as.factor(pmin(ceiling(Age / 10), 8))]
 test[, Cl_Relative := as.factor(pmin(SibSp + Parch, 5))]
+test[, Pclass := as.factor(Pclass)]
+test[, Embarked := as.factor(Embarked)]
+test[, Sex := as.factor(Sex)]
 
 # Checking if there is a correlation between 'having shared tickets' and survival ----
 mtckt <- train[,
